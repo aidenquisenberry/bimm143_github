@@ -16,7 +16,7 @@ The core steps to using git involve
     
 2. Do your normal work
     Add files
-    Modify ffiles etc.
+    Modify files etc.
     
 3. Add your important files to the "stage" 
     In RStudio we click the "stage" radio button

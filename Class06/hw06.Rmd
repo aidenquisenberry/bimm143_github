@@ -1,0 +1,60 @@
+---
+title: "hw06"
+author: "Aiden Quisenberry"
+date: "2026-01-26"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+install.packages("bio3d")
+
+```{r}
+library(bio3d)
+```
+
+# Can you improve this analysis code?
+
+First, I will load the bio3d package and run the repetitive code to understand its output.
+```{r}
+library(bio3d)
+s1 <- read.pdb("4AKE") # kinase with drug
+s2 <- read.pdb("1AKE") # kinase no drug
+s3 <- read.pdb("1E4Y") # kinase with drug
+s1.chainA <- trim.pdb(s1, chain="A", elety="CA")
+s2.chainA <- trim.pdb(s2, chain="A", elety="CA")
+s3.chainA <- trim.pdb(s3, chain="A", elety="CA")
+s1.b <- s1.chainA$atom$b
+s2.b <- s2.chainA$atom$b
+s3.b <- s3.chainA$atom$b
+plotb3(s1.b, sse=s1.chainA, typ="l", ylab="Bfactor")
+plotb3(s2.b, sse=s2.chainA, typ="l", ylab="Bfactor")
+plotb3(s3.b, sse=s3.chainA, typ="l", ylab="Bfactor")
+```
+
+Since the the code written above is highly repetitive, I will create a function that cuts out all of the repetition used to make these plots. The input for my function will be the `pdb file name` for example, "4AKE". Once the input arguement is read, the function will create a dataframe of that file using `read.pdb`, editing the file using `trim.pdb`, create a variable for `atom$b` in that file, and finally creating a plot using `plotb3` by accessing all of the variables previously created. When running the function, the same plots are spit out as the highly repatitive code above.
+
+```{r}
+Bioplot <- function(x){
+  pdb <- read.pdb(x)
+  pdb.chaina <- trim.pdb(pdb, chain="A", elety="CA")
+  pdb.atomb <- pdb.chaina$atom$b
+  plotb3(pdb.atomb, sse=pdb.chaina, typ="l", ylab="Bfactor")
+}
+```
+
+
+```{r}
+"1" <- Bioplot("4AKE")
+"2" <- Bioplot("1AKE")
+"3" <- Bioplot("1E4Y")
+```
+
