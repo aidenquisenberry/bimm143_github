@@ -1,0 +1,202 @@
+# Class06: R Functions
+Aiden (PID:19083392)
+
+- [Background](#background)
+- [A first function](#a-first-function)
+- [A Second Function](#a-second-function)
+- [A new cool function](#a-new-cool-function)
+
+## Background
+
+Functions are at the heart of using R. Everything we do involves calling
+and using functions (from data input, analysis to results output)
+
+All functions in R have at least 3 things:
+
+1.  A **name** the thing we use to call the function.
+2.  One or more input **arguements** that are `,` seperated.
+3.  The **body**, lines of code between curly brackets `{ }` that does
+    the work of the function.
+
+## A first function
+
+Let’s write a simple function that can add some numbers:
+
+``` r
+add <- function(x) { 
+  x + 1
+  }
+```
+
+Let’s try it out
+
+``` r
+add(100)
+```
+
+    [1] 101
+
+``` r
+add(c(100, 200, 300))
+```
+
+    [1] 101 201 301
+
+Modify to be more useful and add more than just 1
+
+``` r
+add <- function(x, y) {
+  x + y
+}
+```
+
+add(100,10)
+
+> **N.B.** Input arguements can be either **required** or **optional**.
+> The latter have a fall-back default that is specified in the function
+> code with an equals sign.
+
+``` r
+#add(x = 100, y = 200, z = 300)
+```
+
+## A Second Function
+
+All functions in R look like this:
+
+    name <- function(arguement) {
+     body
+    }
+
+The `sample()` function in R takes a random sample of a vector or other
+datasat. It uses arguements that define the data, the number of rows you
+want to sample, whether you want to replace the sampled data points, and
+the probability of each vector having been sampled.
+
+``` r
+sample(1:10, 4,)
+```
+
+    [1] 8 5 4 3
+
+> Q. Return 12 numbers picked randomly from the input 1:10
+
+``` r
+sample(1:10, 12, replace = T)
+```
+
+     [1]  7  5  9 10  8  8  2  8  5  4  1  3
+
+> Q. Write the code to generate a random 12 nucleotide long DNA
+> sequence?
+
+``` r
+bases <- c("A","T","C","G") 
+sample(bases, 12, replace = T)
+```
+
+     [1] "G" "C" "C" "C" "G" "G" "A" "A" "A" "C" "C" "C"
+
+> Q. Write a first version function called `generate_dna()` that
+> generage a user specified length `n` random DNA sequence.
+
+``` r
+generate_dna <- function(n=6) {
+  bases <- c("A","T","C","G")
+  sample(bases, n, T)
+}
+```
+
+> Q. Modify your function to retunr a FASTA like sequence, so rather
+> than \[1\] “G” “G” “C” “C” “C” “G” we want “GCAAT”
+
+``` r
+generate_dna <- function(n=6) {
+  bases <- c("A","T","C","G")
+  seq <- sample(bases, n, T)
+  paste(seq, collapse = "")
+}
+```
+
+generate_dna(10)
+
+> Q. Give the user an option to return FASTA format output sequence or
+> standard multi-element vector format?
+
+``` r
+generate_dna <- function(n=6, fasta = T) {
+  bases <- c("A","T","C","G")
+  dnaseq <- sample(bases, n, T)
+  paste(dnaseq, collapse = "")
+  
+  if(fasta) {
+  format <- paste(dnaseq, collapse = "")
+  cat("hello...")
+  }
+  else(fasta)
+  format <- paste(dnaseq, collapse = "")
+  cat("Is it me you're looking for")
+  return(dnaseq)
+}
+```
+
+``` r
+generate_dna(10)
+```
+
+    hello...Is it me you're looking for
+
+     [1] "G" "C" "A" "C" "T" "G" "C" "G" "T" "A"
+
+``` r
+generate_dna(10, fasta = F)
+```
+
+    Is it me you're looking for
+
+     [1] "T" "A" "T" "A" "C" "G" "G" "C" "C" "C"
+
+## A new cool function
+
+> Q. Write a function called `generate_protein` that generates a user
+> specified length protein sequence in FASTA like format
+
+``` r
+generate_protein <- function(n=6) {
+  aa <- c("A","C","D","E","F","G","H",
+          "I","K","L","M","N","P","Q",
+          "R","S","T","V","W","Y")
+  seq <- sample(aa, n, T)
+  paste(seq, collapse = "")
+}
+```
+
+generate_protein(10)
+
+> Q. Use your new `generate_protein` function to generate all sequences
+> between length 6 and 12 amino-acids in length and check if any of
+> these are unique in nature (i.e. found in the NR database at NCBI)
+
+We will use a `for()` loop:
+
+``` r
+for(i in 6:12) {
+  ans <- cat(">", i, sep="", "\n")
+  cat(generate_protein(i), "\n")
+}
+```
+
+    >6
+    YVSWSQ 
+    >7
+    GGPEFLH 
+    >8
+    QSTNVDGK 
+    >9
+    DKWALAHMW 
+    >10
+    KNCKGMHSKC 
+    >11
+    TGQTNNDKASH 
+    >12
+    HSSRLDNFCRVP 
