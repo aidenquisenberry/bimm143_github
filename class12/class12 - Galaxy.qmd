@@ -1,0 +1,88 @@
+---
+title: "class12"
+author: "Aiden Quisenberry PID:A19083392"
+format: pdf
+toc: TRUE
+---
+
+```{r}
+mxl <- read.csv("MXL.csv")
+head(mxl)
+```
+>Q5
+
+```{r}
+gg_count <- sum(mxl$Genotype..forward.strand. == "G|G")
+
+gg_count
+
+genotypes <- table(mxl$Genotype..forward.strand.)
+
+proportions <- (genotypes/nrow(mxl))
+
+proportions*100
+
+```
+
+## Section 2: Initial RNA-Seq analysis
+
+```{r}
+fast1 <- read.csv("HG00109_1.fastq")
+fast2<- read.csv("HG00109_2.fastq")
+head(fast1)
+tail(fast1)
+head(fast2)
+tail(fast2)
+```
+
+>Q13
+
+# determining how many sample size and expression levels for certain genotypes.
+```{r}
+expr <- read.table("rs8067378_ENSG00000172057.6.txt")
+head(expr)
+```
+```{r}
+nrow(expr)
+```
+Sample Size for each genotype
+```{r}
+exprt <- table(expr$geno)
+exprt
+```
+Median Expression Levels for each Genotype
+```{r}
+library(dplyr)
+
+medians <- expr %>%
+  group_by(geno) %>%
+  summarise(medexpr = (median(exp, na.rm = T)))
+medians
+```
+
+Dataframe for genotypes and their corresponding median expression.
+```{r}
+genexp <- data.frame(exprt, medians$medexpr)
+genexp
+```
+
+108 individuals had AA genotype and a median expression of 31.25
+233 individuals had AG genotype and a median expression of 25.06
+121 individuals had GG genotype and a median expression of 20.07
+>Q14
+
+After seeing the boxplot for these data, you can see that the expression levels go significantly down when comparing Homo AA & Het AG to homo GG. This significant decrease in gene expression could help to explain the cause for the asthma phenotype observed in this individual.
+
+Boxplot for this data
+
+```{r}
+library(ggplot2)
+
+exprbxplt <- ggplot(expr, aes(geno, exp, fill = geno)) +
+  geom_boxplot(notch=T)
+exprbxplt
+```
+
+```{r}
+summary(expr)
+```

@@ -1,0 +1,230 @@
+---
+title: "class14: RNASeq Mini-Project"
+author: "Aiden Quisenberry (PID: A19083392)"
+format: pdf
+toc: TRUE
+---
+
+## Background
+
+The data for todays mini-project comes from a knock-down study of an important HOX gene, HOXa1.
+
+## Data Import
+
+```{r}
+metadata <- read.csv("GSE37704_metadata.csv")
+countdata <- read.csv("GSE37704_featurecounts.csv", row.names = 1)[,-1] 
+to.keep <- rowSums(countdata) > 0
+countdata <- countdata[to.keep,]
+metadata
+```
+
+
+### Cleanup
+
+```{r}
+colnames(countdata) == metadata$id
+nrow(countdata)
+```
+
+
+## DESeq Analysis
+
+### Setting up the DESeq object
+
+```{r}
+ctrl.inds <- metadata$condition == "control_sirna"
+ctrl.inds
+trtd.inds <- metadata$condition == "hoxa1_kd"
+trtd.inds
+ctrl.count <-  countdata[,ctrl.inds]
+trtd.count <- countdata[,trtd.inds]
+head(ctrl.count)
+head(trtd.count)
+```
+
+```{r}
+ctrl.means <- rowMeans((ctrl.count))
+head(ctrl.means)
+trtd.means <-  rowMeans(trtd.count)
+head(trtd.means)
+```
+
+```{r}
+means.df <- data.frame(ctrl.means, trtd.means)
+head(means.df)
+```
+
+### Running DESeq
+
+```{r, message = FALSE}
+library(DESeq2)
+
+dds <- DESeqDataSetFromMatrix(countdata,
+                              metadata,
+                              ~condition)
+dds <- DESeq(dds)
+dds
+```
+
+
+### Getting results
+
+```{r}
+res <- results(dds)
+summary(res)
+```
+
+## Volcano Plot
+
+A plot of log2fold change vs -log(adjusted P-Value)
+
+```{r}
+foldchanges <-  res$log2FoldChange
+
+library(ggplot2)
+
+prevolcano <- ggplot(res) +
+  aes(foldchanges,
+      -log(res$padj)) +
+  geom_point()
+```
+
+```{r}
+library(ggplot2)
+
+mycols <- rep("gray", "blue", nrow(res))
+mycols[abs(foldchanges) > 2] <- "blue"
+mycols[res$padj > 0.01 ] <- "gray"
+
+volcano <- ggplot(res) +
+  aes(foldchanges,
+      -log(res$padj)) +
+  geom_point(col = mycols) +
+  labs(x = "Log2(Foldchange", y = "-Log(p-value)") +
+  geom_vline(xintercept = c(-2,2)) +
+  geom_hline(yintercept = .1)
+
+
+volcano
+```
+
+
+## Add Annotation
+Q. Use the mapIDs() function multiple times to add SYMBOL, ENTREZID and GENENAME annotation to our results by completing the code below.
+```{r, message = FALSE}
+library("AnnotationDbi")
+library("org.Hs.eg.db")
+
+columns(org.Hs.eg.db)
+
+res$SYMBOL <- mapIds(org.Hs.eg.db,
+                     keys = rownames(res),
+                     keytype = "ENSEMBL",
+                     column = "SYMBOL")
+res$ENTREZID <- mapIds(org.Hs.eg.db,
+                     keys = rownames(res),
+                     keytype = "ENSEMBL",
+                     column = "ENTREZID")
+res$GENENAME <- mapIds(org.Hs.eg.db,
+                     keys = rownames(res),
+                     keytype = "ENSEMBL",
+                     column = "GENENAME")
+keggres <- res[!is.na(res$ENTREZID), ]
+head(res)
+```
+
+```{r}
+write.csv(res,
+          file="results_annotated.csv")
+```
+
+## Pathway Analysis
+
+```{r}
+library(gage)
+library(gageData)
+library(pathview)
+```
+
+```{r}
+data(kegg.sets.hs)
+data(sigmet.idx.hs)
+kegg.sets.hs = kegg.sets.hs[sigmet.idx.hs]
+head(kegg.sets.hs, 3)
+```
+
+```{r}
+res <- res[order(res$pvalue),]
+write.csv(res, file = "deseq_results.csv")
+```
+
+
+### KEGG
+
+```{r}
+keggres <- res[!is.na(res$ENTREZID), ]
+foldchanges <- keggres$log2FoldChange
+names(foldchanges) <- keggres$ENTREZID
+keep <- !is.na(foldchanges) & is.finite(foldchanges)
+foldchanges <- foldchanges[keep]
+```
+
+```{r}
+library(pathview)
+library(gage)
+library(gageData)
+
+data(kegg.sets.hs)
+data(sigmet.idx.hs)
+
+kegg.sets.hs <- kegg.sets.hs[sigmet.idx.hs]
+head(kegg.sets.hs, 3)
+```
+
+```{r}
+pathview(gene.data=foldchanges, pathway.id="hsa04110")
+```
+![](hsa04110.pathview.png)
+
+```{r}
+keggrespathways <- rownames(keggres$greater)[1:5]
+
+keggresids = substr(keggrespathways, start=1, stop=8)
+pathview(gene.data=foldchanges, pathway.id=keggresids, species="hsa")
+```
+
+```{r}
+keggrespathways <- rownames(keggres$less)[1:5]
+
+keggresids = substr(keggrespathways, start=1, stop=8)
+pathview(gene.data=foldchanges, pathway.id=keggresids, species="hsa")
+```
+
+
+### GO
+
+```{r}
+data(go.sets.hs)
+data(go.subs.hs)
+
+gobpsets = go.sets.hs[go.subs.hs$BP] # Focuses on Biological Process subset of GO
+
+gobpres = gage(foldchanges, gsets=gobpsets)
+lapply(gobpres, head)
+```
+
+### Reactome
+
+```{r}
+sig_genes <- res[res$padj <= 0.05 & !is.na(res$padj), "SYMBOL"]
+print(paste("Total number of significant genes:", length(sig_genes)))
+```
+
+```{r}
+write.table(sig_genes, file="significant_genes.txt", row.names=FALSE, col.names=FALSE, quote=FALSE)
+```
+
+Q: What pathway has the most significant “Entities p-value”? Do the most significant pathways listed match your previous KEGG results? What factors could cause differences between the two methods?
+
+Cell Cycle, Mitotic has the most significant p-value at 2.1E-5. Yes, they both line up on the Cell Cycle being greatly affected by the treatment. The biggest difference would be from GO having a wider range of genes to pull from, and that their use in the cycle is not necassarily known. If GO found a major upregulation in a gene that doesnt really affect the cell cycle very greatly, it could provide a negative skew on how important that change in regulation really is.

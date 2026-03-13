@@ -1,0 +1,22 @@
+---
+title: "class19"
+author: "Aiden Quisenberry (PID:A19083392)"
+format: html
+---
+
+```{r}
+library(bio3d)
+
+seq <- read.fasta("A19083392_mutant_seq.fa")
+seq
+cyclin <- get.seq("NP_444284.1")
+cyclin
+```
+
+```{r}
+attributes(seq)
+comp <- conserv(seq)
+mutantpos <- which(comp != 1)
+seq$ali[,mutantpos]
+```
+

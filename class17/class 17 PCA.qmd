@@ -1,0 +1,75 @@
+---
+title: "class 17 : PCA"
+author: "Aiden Quisenberry (PID:A19083392)"
+format: pdf
+---
+
+```{r}
+library(tximport)
+
+# setup the folder and file-names to read
+folders <- dir(pattern="SRR21568*")
+samples <- sub("_quant", "", folders)
+files <- file.path( folders, "abundance.h5" )
+names(files) <- samples
+
+txi.kallisto <- tximport(files, type = "kallisto", txOut = TRUE)
+```
+```{r}
+head(txi.kallisto$counts)
+colSums(txi.kallisto$counts)
+sum(rowSums(txi.kallisto$counts)>0)
+```
+
+```{r}
+to.keep <- rowSums(txi.kallisto$counts)>0
+kset.nonzero <- txi.kallisto$counts[to.keep,]
+head(kset.nonzero)
+keep2 <- apply(kset.nonzero,1,sd)>0
+x <- kset.nonzero[keep2,]
+head(x)
+```
+
+```{r}
+pca <- prcomp(t(x), scale = TRUE)
+summary(pca)
+```
+
+```{r}
+plot(pca$x[,1], pca$x[,2],
+     col=c("blue","blue","red","red"),
+     xlab="PC1", ylab="PC2", pch=16)
+```
+
+>Q. Use ggplot to make a similar figure of PC1 vs PC2 and a separate figure PC1 vs PC3 and PC2 vs PC3.
+
+```{r}
+library(ggplot2)
+library(ggrepel)
+
+mycols1 = c("blue","blue","red","red")
+mycols2 = c("blue","blue","green","green")
+mycols3 = c("red","red","green","green")
+
+ggplot(pca$x) +
+  aes(PC1, PC2, label=rownames(pca$x)) +
+  geom_point(col=mycols1) +
+  labs(title = "PC1 v PC2", x = "PC1", y = "PC2") +
+  geom_text_repel( col=mycols1 ) +
+  theme_bw()
+
+ggplot(pca$x) +
+  aes(PC1, PC3, label=rownames(pca$x)) +
+  geom_point(col=mycols2) +
+  labs(title = "PC1 v PC3", x = "PC1", y = "PC3") +
+  geom_text_repel( col=mycols2) +
+  theme_bw()
+
+ggplot(pca$x) +
+  aes(PC2, PC3, label=rownames(pca$x)) +
+  geom_point(col=mycols3) +
+  labs(title = "PC2 v PC3", x = "PC2", y = "PC3") +
+  geom_text_repel( col=mycols3) +
+  theme_bw()
+```
+
