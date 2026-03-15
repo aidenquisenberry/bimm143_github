@@ -1,7 +1,7 @@
 ---
 title: "class19"
 author: "Aiden Quisenberry (PID:A19083392)"
-format: html
+format: pdf
 ---
 
 ```{r}
@@ -19,4 +19,6 @@ comp <- conserv(seq)
 mutantpos <- which(comp != 1)
 seq$ali[,mutantpos]
 ```
+
+![Mutant Cyclin-D1 Model](Mol* Cyclin-D1 Representation.png)
 
