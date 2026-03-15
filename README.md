@@ -1,6 +1,3 @@
-# bimm143_github
-My understanding of GitHub [BIMM143](https://bioboot.github.io/bimm143_W26/class-material/lab15.html)
-
 # Bioinformatics Academic Background
 UC San Diego Bionformatics Course - [BIMM143](https://bioboot.github.io/bimm143_W26/)
 
