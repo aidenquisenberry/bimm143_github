@@ -10,4 +10,5 @@ My classwork from [BIMM143](https://bioboot.github.io/bimm143_W26/)
 - [R functions and R packages from CRAN and BioConductor](Class06/class06---R-Functions.pdf)
 - [PCA and Heirarchical Clustering](Class07/Class07.pdf)
 * Bioinformatics Tools
--[class 10 PDB's](class10/class10/class10.pdf)
+- [class 10 PDB's](class10/class10/class10.pdf)
+- [AlphaFold](class11/class11.pdf)
