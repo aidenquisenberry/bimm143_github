@@ -5,8 +5,4 @@ My github lecture [BIMM143](https://bioboot.github.io/bimm143_W26/class-material
 My classwork from [BIMM143](https://bioboot.github.io/bimm143_W26/)
 
 ## Index of Material
-
-* Introductory Classes
-
-[Class 06 PDF](Class06/class06---R-Functions.pdf)
-* R Fundamentals
+* [R Fundamentals](Class06/class06---R-Functions.pdf)
